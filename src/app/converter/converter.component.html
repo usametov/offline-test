@@ -1,0 +1,44 @@
+<form [formGroup]="conversionForm" novalidate>
+  <div class="slds-box slds-form slds-form_stacked">    
+    <header>
+      <span class="slds-text-heading_small">Currency Converter</span>          
+    </header>
+    
+    <div>
+      <div class="slds-form-element"> 
+        <label for="amount" class="slds-form-element__label">Type in amount and select currency:</label>
+        <div class="slds-form-element__control">
+          <input id="amount" type="text" placeholder="0.00"
+            formControlName="amount" />
+          <select id="srcCurrency" formControlName="srcCurrency"
+            name="srcCurrency">
+            <option>CAD</option>
+            <option>USD</option>
+            <option>EUR</option>
+          </select>
+      </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="slds-form-element"> 
+        <label for="convertedAmount" class="slds-form-element__label ">Converted amount:
+        </label>
+        <div class="slds-form-element__control">
+          <input id="convertedAmount" type="text" placeholder="0.00"
+            formControlName="convertedAmount" />
+          <select id="targetCurrency" formControlName="targetCurrency">
+            <option>CAD</option>
+            <option>USD</option>
+            <option>EUR</option>
+          </select>
+      </div>
+      <span class="slds-float_right"><a href="http://fixer.io">Disclaimer</a></span>
+      </div>
+    </div>
+  
+  <span class="slds-error">{{ errorMessage }}</span>
+  </div>    
+</form>
+
+
