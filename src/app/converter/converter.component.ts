@@ -54,7 +54,8 @@ export class ConverterComponent {
 
        this.rateStore.getRate().subscribe((response: RateState) => {
         response.data.caseOf({
-          right: (r: RateResponse) => convertedAmountControl.setValue(amt * r.rates[to]),
+          right: (r: RateResponse) => { convertedAmountControl.setValue(amt * r.rates[to]);
+                                        this.errorMessage = ''; },
           left: (err: ServerError) =>  { err.errorMessage === '' ?
                                         this.errorMessage = 'unknown error!' :
                                         this.errorMessage = err.errorMessage; }
