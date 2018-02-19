@@ -1,4 +1,4 @@
-<form [formGroup]="conversionForm" novalidate>
+<form [formGroup]="conversionForm" name="conversionForm"  novalidate>
   <div class="slds-box slds-form slds-form_stacked" style="text-align: left ! important;font-family:  'Trebuchet MS' ! important;">
     <header>
       <span class="slds-text-heading_small">Currency converter</span>          
@@ -6,17 +6,21 @@
     
     <div>
       <div class="slds-form-element"> 
-        <label for="amount" class="slds-form-element__label">Type in amount and select currency:</label>
+        <label for="amount" class="slds-form-element__label">
+          Type in amount and select currency:</label>
         <div class="slds-form-element__control">
-          <input id="amount" type="text" placeholder="0.00"
-            formControlName="amount" />
+          <input id="amount" type="text" placeholder="0.00"           
+            formControlName="amount" />            
           <select id="srcCurrency" formControlName="srcCurrency"
             name="srcCurrency">
             <option>CAD</option>
             <option>USD</option>
             <option>EUR</option>
           </select>
-      </div>
+        </div>
+        <div *ngIf="amountInvalid()" class="slds-text-color_error">
+          Please enter valid amount
+        </div>
       </div>
     </div>
 

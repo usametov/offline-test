@@ -39,6 +39,11 @@ export class ConverterComponent {
     return +val > 0;
   }
 
+  amountInvalid(): boolean {
+    return this.conversionForm.get('amount').value.length > 0
+    && !this.isAmount(this.conversionForm.get('amount').value);
+  }
+
   onConverterParamsChange() {
     const amountControl = this.conversionForm.get('amount');
     const srcCurrencyControl = this.conversionForm.get('srcCurrency');
