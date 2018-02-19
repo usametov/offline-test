@@ -5,6 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/combineLatest';
 import 'rxjs/add/operator/debounce';
 import 'rxjs/add/operator/startWith';
+import 'rxjs/add/operator/do';
 import { timer } from 'rxjs/observable/timer';
 import { RateRequest } from '../models/rate.request';
 import { RequestRate } from '../states/actions/rates';
@@ -25,7 +26,7 @@ export class ConverterComponent {
   constructor(private rateStore: RateStore) {
 
     this.conversionForm = new FormGroup({
-      amount: new FormControl('', Validators.compose([Validators.required, Validators.pattern('^[0-9]{0,6}\.?[0-9]{0,2}$')])),
+      amount: new FormControl('', Validators.compose([Validators.required, Validators.pattern('^[0-9]*\.?[0-9]{0,2}$')])),
       srcCurrency: new FormControl('CAD', Validators.required),
       convertedAmount: new FormControl(),
       targetCurrency: new FormControl('CAD', Validators.required)
@@ -34,31 +35,44 @@ export class ConverterComponent {
     this.onConverterParamsChange();
   }
 
+  isAmount(val): boolean {
+    return +val > 0;
+  }
+
   onConverterParamsChange() {
     const amountControl = this.conversionForm.get('amount');
     const srcCurrencyControl = this.conversionForm.get('srcCurrency');
     const targetCurrencyControl = this.conversionForm.get('targetCurrency');
     const convertedAmountControl = this.conversionForm.get('convertedAmount');
 
-    const rateRequests = srcCurrencyControl.valueChanges.startWith('CAD')
+    const rateRequests = amountControl.valueChanges
+    .filter(v => !amountControl.invalid && this.isAmount(v))
+    .do(_ => console.log('after filter', amountControl.invalid))
     .combineLatest(
-        amountControl.valueChanges
+        srcCurrencyControl.valueChanges.startWith('CAD')
       , targetCurrencyControl.valueChanges.startWith('CAD')
-      // , (from,amount, to) => ({From: from, To: to, Amount: amount})
     ).debounce(() => timer(500));
 
-    rateRequests.subscribe(([from, amount, to]) => {
-      console.log([amount, from, to]);
+    rateRequests.subscribe(([amount, from, to]) => {
+
       const amt = Number.parseFloat(amount);
       this.rateStore.requestRate(from as String, to as String, amt);
 
        this.rateStore.getRate().subscribe((response: RateState) => {
         response.data.caseOf({
-          right: (r: RateResponse) => { convertedAmountControl.setValue(amt * r.rates[to]);
-                                        this.errorMessage = ''; },
-          left: (err: ServerError) =>  { err.errorMessage === '' ?
-                                        this.errorMessage = 'unknown error!' :
-                                        this.errorMessage = err.errorMessage; }
+
+          right: (r: RateResponse) => {
+
+            if (!isNaN(r.rates[to])) {
+              convertedAmountControl.setValue(amt * r.rates[to]);
+            } else { convertedAmountControl.setValue(0); }
+
+            this.errorMessage = ''; },
+
+          left: (err: ServerError) =>  {
+            err.errorMessage === '' ?
+            this.errorMessage = 'unknown error!' :
+            this.errorMessage = err.errorMessage; }
         });
        });
     });
