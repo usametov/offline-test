@@ -1,25 +1,35 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Converter.ComponentComponent } from './converter.component.component';
+import { ConverterComponent } from './converter.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { StoreModule } from '@ngrx/store';
+import { reducers } from '../states/reducers/index';
+import { RateStore } from '../states/store/rate.store';
 
 describe('Converter.ComponentComponent', () => {
-  let component: Converter.ComponentComponent;
-  let fixture: ComponentFixture<Converter.ComponentComponent>;
+  let component: ConverterComponent;
+  let fixture: ComponentFixture<ConverterComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ Converter.ComponentComponent ]
+      imports: [
+        ReactiveFormsModule,
+        StoreModule.forRoot(reducers),
+      ],
+      declarations: [ ConverterComponent ],
+      providers: [RateStore],
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(Converter.ComponentComponent);
+    fixture = TestBed.createComponent(ConverterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create', (done) => {
     expect(component).toBeTruthy();
+    done();
   });
 });
