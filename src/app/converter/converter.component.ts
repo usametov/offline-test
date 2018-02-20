@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RateStore } from '../states/store/rate.store';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
@@ -12,16 +12,18 @@ import { RequestRate } from '../states/actions/rates';
 import { RateState } from '../states/reducers/ratefixer';
 import { RateResponse } from '../models/rate.response';
 import { ServerError } from '../models/server-error';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-converter',
   templateUrl: './converter.component.html',
   styleUrls: ['./converter.component.scss']
 })
-export class ConverterComponent {
+export class ConverterComponent implements OnDestroy {
 
   errorMessage: string;
   conversionForm: FormGroup;
+  subscription: Subscription;
 
   constructor(private rateStore: RateStore) {
 
@@ -58,7 +60,7 @@ export class ConverterComponent {
       , targetCurrencyControl.valueChanges.startWith('CAD')
     ).debounce(() => timer(500));
 
-    rateRequests.subscribe(([amount, from, to]) => {
+    this.subscription = rateRequests.subscribe(([amount, from, to]) => {
 
       const amt = Number.parseFloat(amount);
       this.rateStore.requestRate(from as String, to as String, amt);
@@ -83,4 +85,7 @@ export class ConverterComponent {
     });
   }
 
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 }
