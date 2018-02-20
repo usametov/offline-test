@@ -23,7 +23,8 @@ export class ConverterComponent implements OnDestroy {
 
   errorMessage: string;
   conversionForm: FormGroup;
-  subscription: Subscription;
+  reqestSubscription: Subscription;
+  rateSubscription: Subscription;
 
   constructor(private rateStore: RateStore) {
 
@@ -47,35 +48,34 @@ export class ConverterComponent implements OnDestroy {
   }
 
   onConverterParamsChange() {
+
     const amountControl = this.conversionForm.get('amount');
     const srcCurrencyControl = this.conversionForm.get('srcCurrency');
     const targetCurrencyControl = this.conversionForm.get('targetCurrency');
     const convertedAmountControl = this.conversionForm.get('convertedAmount');
 
-    const rateRequests = amountControl.valueChanges
+    const rateRequests = amountControl.valueChanges // react on change
     .filter(v => !amountControl.invalid && this.isAmount(v))
-    .do(_ => console.log('after filter', amountControl.invalid))
     .combineLatest(
-        srcCurrencyControl.valueChanges.startWith('CAD')
+        srcCurrencyControl.valueChanges.startWith('CAD') // react on change
       , targetCurrencyControl.valueChanges.startWith('CAD')
-    ).debounce(() => timer(500));
+    ).debounce(() => timer(500)); // delay call by half-second
 
-    this.subscription = rateRequests.subscribe(([amount, from, to]) => {
+    this.reqestSubscription = rateRequests.subscribe(([amount, from, to]) => {
 
       const amt = Number.parseFloat(amount);
       this.rateStore.requestRate(from as String, to as String, amt);
 
-       this.rateStore.getRate().subscribe((response: RateState) => {
+      this.rateSubscription = this.rateStore.getRate().subscribe((response: RateState) => {
         response.data.caseOf({
-
+          // do the right thing :)
           right: (r: RateResponse) => {
-
             if (!isNaN(r.rates[to])) {
               convertedAmountControl.setValue(amt * r.rates[to]);
             } else { convertedAmountControl.setValue(0); }
 
             this.errorMessage = ''; },
-
+          // unhappy path
           left: (err: ServerError) =>  {
             err.errorMessage === '' ?
             this.errorMessage = 'unknown error!' :
@@ -86,6 +86,7 @@ export class ConverterComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.reqestSubscription.unsubscribe();
+    this.rateSubscription.unsubscribe();
   }
 }
